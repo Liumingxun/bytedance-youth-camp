@@ -1,7 +1,7 @@
 const http = require('http')
 const fs = require('fs')
 http.createServer((req, res) => {
-  const {url, method} = req
+  const {url, method, headers} = req
   // console.log(req)
   if (url === '/' && method === 'GET') {
     fs.readFile('index.html', ((err, data) => {
@@ -12,9 +12,13 @@ http.createServer((req, res) => {
         res.end('服务器出了点小问题')
       }
       res.statusCode = 200
-      res.setHeader('Content-Type', 'text/html; charset=utf-8')
-      res.end(data)
+      res.setHeader('Content-Type', 'text/html')
+      res.write(data)
+      res.end()
     }))
+  } else if (method === 'GET' && headers.accept.indexOf('image/*') !== -1) {
+    // readFile 读取把全部图片加载到内存
+    fs.createReadStream('.' + url).pipe(res)
   } else {
     res.statusCode = 400
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
