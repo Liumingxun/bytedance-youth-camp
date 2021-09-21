@@ -19,7 +19,7 @@ module.exports = async name => {
   log(welcome)
 
   log('🎉创建项目' + name)
-  // await clone('direct:https://codeload.github.com/su37josephxia/vue-template/zip/refs/heads/master',name)
+  await clone('direct:https://codeload.github.com/su37josephxia/vue-template/zip/refs/heads/master',name)
 
   const tips = ora({
     text: '安装依赖中~',
@@ -27,7 +27,7 @@ module.exports = async name => {
     color: 'cyan'
   })
   tips.start()
-  // await spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install'], { cwd: `./${name}` })
+  await spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install'], { cwd: `./${name}` })
   tips.succeed()
   log('🎉安装完成：\n' +
     'To get Start:\n' +
