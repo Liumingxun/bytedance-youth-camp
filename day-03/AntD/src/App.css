@@ -1,0 +1,27 @@
+@import '~antd/dist/antd.css';
+
+#logo img {
+    height: 32px;
+    margin-right: 12px;
+    vertical-align: middle;
+}
+
+#logo {
+    font-size: 18px;
+    color: #000000d9;
+    padding-right: 16px;
+    padding-left: 40px;
+}
+
+.pt18px {
+    padding-top: 18px;
+}
+
+.center {
+    width: 800px;
+    margin: 0 auto;
+}
+
+.biglogo {
+    margin: 120px;
+}
