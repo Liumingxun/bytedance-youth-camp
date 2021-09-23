@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+          name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav {
+            height: 80px;
+        }
+    </style>
+</head>
+<body>
+<div class="nav" style="background-color: burlywood;"></div>
+<div class="nav" style="background-color: royalblue;"></div>
+<div class="nav" style="background-color: limegreen;"></div>
+<div class="nav" style="background-color: turquoise;"></div>
+<div style="height: 2000px"></div>
+<script>
+  let targetNav;
+  window.onload = function () {
+
+  }
+  window.onscroll = function () {
+    let scrollTop = document.querySelector('body').scrollTop
+    let viewHeight = document.body.clientHeight
+    let scrollHeight = document.querySelector('body').scrollHeight
+    console.log(scrollTop + ' ' + viewHeight + ' ' + scrollHeight)
+
+  }
+</script>
+</body>
+</html>

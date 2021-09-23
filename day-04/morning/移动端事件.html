@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+          name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <title>Document</title>
+    <style>
+        #box {
+            width: 70vw;
+            height: 70vw;
+            background-color: #6cf;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+<div id="box"></div>
+<script>
+  let box = document.getElementById("box")
+  document.addEventListener("touchstart", (e) =>
+      e.preventDefault(),
+    {
+      passive: false
+    })
+  // passive 阻止 touchstart 默认事件
+  /*
+  1. 滚动条滚动
+  2. 页面缩放
+  3. 超链接
+  4.
+   */
+  box.addEventListener("touchstart", () => {
+    console.log("start")
+  })
+
+  box.addEventListener("touchmove", () => {
+    console.log("move")
+  })
+
+  box.addEventListener("touchend", (e) => {
+    box.innerHTML = `
+        当前事件手指个数：${e.changedTouches.length}<br>
+        当前元素中手指个数：${e.targetTouches.length}<br>
+        当前屏幕上手指个数：${e.touches.length}
+    `
+  })
+
+  box.addEventListener("touchcancel", () => {
+    console.log("cancel")
+  })
+</script>
+</body>
+</html>
