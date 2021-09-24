@@ -1,0 +1,107 @@
+<meta charset="UTF-8">
+<div id="app">{{ title }}</div>
+<script>
+  const Vue = {
+    createRenderer({querySelector, createElement}) {
+      return {
+        createApp(options) {
+          return {
+            mount(selector) {
+              // console.log(233)
+              // 1. 找到宿主元素
+              const parent = querySelector(selector)
+              // 2. 渲染页面
+              if (!options.render) {
+                options.render = this.compile(parent.innerHTML)
+              }
+              // 其他选项
+
+              if (options.setup) {
+                this.setupState = options.setup()
+              }
+
+              if (options.data) {
+                this.data = options.data()
+              }
+
+              const proxy = new Proxy(this, {
+                get(target, key) {
+                  if (target.setupState && key in target.setupState) {
+                    return target.setupState[key]
+                  }
+                  return target.data[key]
+                },
+                set(target, key, val) {
+                  if (target.setupState[key] && key in target.setupState) {
+                    target.setupState[key] = val
+                    return
+                  }
+                  target.data[key] = val
+                }
+              })
+
+              this.update = function () {
+                const el = options.render.call(proxy)
+                // 3. 追加元素
+                parent.innerHTML = ''
+                parent.append(el)
+              }
+              this.update()
+            },
+            compile() {
+              // 返回 render()
+              // 解析 -> AST
+              return function render() {
+                const h3 = createElement('h3')
+                h3.textContent = this.title
+                return h3
+              }
+            }
+          }
+        }
+      }
+    },
+
+    createApp(options) {
+      return Vue.createRenderer({
+        querySelector(selector) {
+          return document.querySelector(selector)
+        },
+        createElement(tag) {
+          return document.createElement(tag)
+        }
+      }).createApp(options)
+    }
+  }
+</script>
+<script>
+  function reactive(obj) {
+    // 拦截用户对代理对象的访问
+    // 从而在值发生变化的时候做出响应式
+    return new Proxy(obj, {
+      get(target, key) {
+        console.log('get key', target)
+        return target[key]
+      },
+      set(target, key, val) {
+        console.log(target)
+        target[key] = val
+        app.update()
+      }
+    })
+
+    // 数值变化时再一次 render()
+  }
+  const app = Vue.createApp({
+    setup() {
+        const state = reactive({
+          title: 'origin'
+        })
+      setTimeout(()=> {
+        state.title = 'changed'
+      }, 2000)
+      return state
+    }
+  })
+  app.mount('#app')
+</script>

@@ -1,0 +1,72 @@
+<meta charset="UTF-8">
+<div id="app">{{ title }}</div>
+<script>
+  const Vue = {
+    createApp(options) {
+      return {
+        mount(selector) {
+          // console.log(233)
+          // 1. 找到宿主元素
+          const parent = document.querySelector(selector)
+          // 2. 渲染页面
+          if (!options.render) {
+            options.render = this.compile(parent.innerHTML)
+          }
+          // 其他选项
+
+          if (options.setup) {
+            this.setupState = options.setup()
+          }
+
+          if(options.data) {
+            this.data = options.data()
+          }
+
+          const proxy = new Proxy(this, {
+            get(target, key) {
+                if (target.setupState && key in target.setupState) {
+                  return target.setupState[key]
+                }
+                return target.data[key]
+            },
+            set(target, key, val) {
+              if (target.setupState[key] && key in target.setupState) {
+                target.setupState[key] = val
+                return
+              }
+              target.data[key] = val
+            }
+          })
+
+          const el = options.render.call(proxy)
+          // 3. 追加元素
+          parent.innerHTML = ''
+          parent.append(el)
+        },
+        compile() {
+          // 返回 render()
+          // 解析 -> AST
+          return function render() {
+            const h3 = document.createElement('h3')
+            h3.textContent = this.title
+            return h3
+          }
+        }
+      }
+    }
+  }
+</script>
+<script>
+  const app = Vue.createApp({
+    data() {
+      return {
+        title: 'Hello, LM!'
+      }
+    },setup() {
+      return {
+        title: 'Vue, hello!'
+      }
+    }
+  })
+  app.mount('#app')
+</script>
