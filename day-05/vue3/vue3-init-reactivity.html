@@ -14,8 +14,8 @@
               if (!options.render) {
                 options.render = this.compile(parent.innerHTML)
               }
-              // 其他选项
 
+              // 其他选项
               if (options.setup) {
                 this.setupState = options.setup()
               }
@@ -80,11 +80,11 @@
     // 从而在值发生变化的时候做出响应式
     return new Proxy(obj, {
       get(target, key) {
-        console.log('get key', target)
+        console.log('get key', key)
         return target[key]
       },
       set(target, key, val) {
-        console.log(target)
+        console.log('set key',key)
         target[key] = val
         app.update()
       }
