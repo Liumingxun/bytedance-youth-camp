@@ -1,0 +1,181 @@
+<meta charset="UTF-8">
+<div id="app">{{ title }}</div>
+<script>
+  // 返回 vnode，描述视图
+  function h(tag, props, children) {
+    return {tag, props, children}
+  }
+
+  const Vue = {
+    createRenderer({querySelector, createElement}) {
+      return {
+        createApp(options) {
+          return {
+            mount: function (selector) {
+              // 1. 找到宿主元素
+              const parent = querySelector(selector)
+              // 2. 渲染页面
+              if (!options.render) {
+                options.render = this.compile(parent.innerHTML)
+              }
+
+              // 其他选项
+              if (options.setup) {
+                this.setupState = options.setup()
+              }
+
+              if (options.data) {
+                this.data = options.data()
+              }
+
+              const proxy = new Proxy(this, {
+                get(target, key) {
+                  if (target.setupState && key in target.setupState) {
+                    return target.setupState[key]
+                  }
+                  return target.data[key]
+                },
+                set(target, key, val) {
+                  if (target.setupState[key] && key in target.setupState) {
+                    target.setupState[key] = val
+                    return
+                  }
+                  target.data[key] = val
+                }
+              })
+
+              this.update = effect(() => {
+                // 转化vnode为dom
+                const vnode = options.render.call(proxy)
+                if (!this.isMounted) {
+                  const el = this.createElem(vnode)
+                  parent.innerHTML = ''
+                  parent.appendChild(el)
+                  this.isMounted = true
+                } else {
+                  // todo: update
+                }
+              })
+            },
+            createElem(vnode) {
+              const {tag, props, children} = vnode
+              const el = createElement(tag)
+              // todo: 设置属性
+              // children情况
+              if (typeof children === 'string') {
+                el.textContent = children
+              } else {
+                children.forEach(child => el.append(this.createElem(child)))
+              }
+              return el
+            },
+            // 解析 template
+            compile(template) {
+              // 返回 render()
+              // 解析 -> AST
+              return function render() {
+                return h('ul', null, [
+                  h('li', null, '2333'),
+                  h('li', null, '2333'),
+                  h('li', null, '2333')
+                ])
+              }
+            }
+          }
+        }
+      }
+    },
+    createApp(options) {
+      return Vue.createRenderer({
+        querySelector(selector) {
+          return document.querySelector(selector)
+        },
+        createElement(tag) {
+          return document.createElement(tag)
+        }
+      }).createApp(options)
+    }
+  }
+
+  function reactive(obj) {
+    // 拦截用户对代理对象的访问
+    // 从而在值发生变化的时候做出响应式
+    return new Proxy(obj, {
+      get(target, key) {
+        console.log('get key', key)
+        track(target, key)
+        return target[key]
+      },
+      set(target, key, val) {
+        console.log('set key', key)
+        target[key] = val
+        // 数值变化时再一次 render()
+        trigger(target, key)
+        // app.update()
+      }
+    })
+  }
+
+  const effectStack = []
+
+  function effect(fn) {
+    const eff = function () {
+      try {
+        effectStack.push(eff)
+        // 触发 reactive().get()
+        fn()
+      } finally {
+        effectStack.pop()
+      }
+    }
+    eff()
+    return eff
+  }
+
+  // targetMap = {target: {key: [updateFn1, updateFn2]}}
+  const targetMap = {}
+
+  function track(target, key) {
+    const effect = effectStack[effectStack.length - 1]
+    let map = targetMap[target]
+    if (!map) {
+      // 首次 get
+      map = targetMap[target] = {}
+    }
+    let deps = map[key]
+    if (!deps) {
+      // 第一次 添加依赖
+      deps = map[key] = []
+    }
+    if (!deps[effect]) {
+      deps.push(effect)
+    }
+    targetMap[target] = {}
+    targetMap[target][key] = [effect]
+    // todo 数组添加？？？
+    // targetMap[target][key].push(effect)
+  }
+
+  function trigger(target, key) {
+    const map = targetMap[target]
+    if (map) {
+      const deps = map[key]
+      if (deps) {
+        deps.forEach(dep => dep())
+      }
+    }
+  }
+
+  const app = Vue.createApp({
+    setup() {
+      const state = reactive({
+        title: 'origin'
+      })
+      setTimeout(() => {
+        state.title = 'changed'
+      }, 2000)
+      return state
+    }
+  })
+  app.mount('#app')
+</script>
